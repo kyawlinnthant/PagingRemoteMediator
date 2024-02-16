@@ -15,7 +15,7 @@ interface CatDao {
     suspend fun insertCats(cats: List<CatEntity>)
 
     @Query("SELECT * FROM ${CatEntity.TABLE_NAME}")
-    suspend fun queryCats(): List<CatEntity>
+    fun queryCats(): List<CatEntity>
 
     @Query("DELETE FROM ${CatEntity.TABLE_NAME}")
     suspend fun deleteAll()

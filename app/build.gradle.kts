@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.bundles.room)
     ksp(libs.room.compiler)
     implementation(libs.google.hilt.android)
+    implementation(libs.hilt.navigation)
     ksp(libs.google.hilt.compiler)
     implementation(libs.serialization.json)
 
