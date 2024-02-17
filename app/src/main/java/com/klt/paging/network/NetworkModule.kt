@@ -45,8 +45,14 @@ object NetworkModule {
         client: OkHttpClient,
         factory: Converter.Factory
     ): Retrofit = Retrofit.Builder()
-        .baseUrl("https://api.thecatapi.com/v1/images/search/")
+        .baseUrl("https://api.thecatapi.com/v1/")
         .client(client)
         .addConverterFactory(factory)
         .build()
+
+    @Provides
+    @Singleton
+    fun provideApiService(
+        retrofit: Retrofit
+    ): ApiService = retrofit.create(ApiService::class.java)
 }

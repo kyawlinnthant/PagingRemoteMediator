@@ -6,8 +6,14 @@ import retrofit2.http.Query
 
 interface ApiService {
     @GET("images/search")
-    suspend fun getCats(
-        @Query("limit") limit: Int = 10,
+    suspend fun getCatsWithResponse(
+        @Query("limit") size: Int,
         @Query("page") page: Int
     ): Response<List<CatDTO>>
+
+    @GET("images/search")
+    suspend fun getCats(
+        @Query("limit") size: Int,
+        @Query("page") page: Int
+    ): List<CatDTO>
 }

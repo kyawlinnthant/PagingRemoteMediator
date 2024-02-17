@@ -1,5 +1,6 @@
 package com.klt.paging.database
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -15,7 +16,10 @@ interface CatDao {
     suspend fun insertCats(cats: List<CatEntity>)
 
     @Query("SELECT * FROM ${CatEntity.TABLE_NAME}")
-    suspend fun queryCats(): List<CatEntity>
+    fun queryCats(): List<CatEntity>
+
+    @Query("SELECT * FROM ${CatEntity.TABLE_NAME}")
+    fun getAll(): PagingSource<Int, CatEntity>
 
     @Query("DELETE FROM ${CatEntity.TABLE_NAME}")
     suspend fun deleteAll()
