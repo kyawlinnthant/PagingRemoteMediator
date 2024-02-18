@@ -1,4 +1,4 @@
-package com.klt.paging.ui.theme
+package com.klt.paging.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

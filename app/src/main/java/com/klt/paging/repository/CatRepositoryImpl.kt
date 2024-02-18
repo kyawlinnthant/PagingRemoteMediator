@@ -4,11 +4,8 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
-import com.klt.paging.Cat
 import com.klt.paging.database.CatDatabase
 import com.klt.paging.database.CatEntity
-import com.klt.paging.paging.CatNetworkPagingSource
 import com.klt.paging.paging.CatRemoteMediator
 import com.klt.paging.paging.Constant
 import kotlinx.coroutines.flow.Flow

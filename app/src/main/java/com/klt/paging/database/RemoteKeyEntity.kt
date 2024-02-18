@@ -10,6 +10,7 @@ data class RemoteKeyEntity(
     val id: String,
     val nextPage: Int?,
     val prevPage: Int?,
+    val currentPage : Int,
 ) {
     companion object {
         const val TABLE_NAME = "remote_key"

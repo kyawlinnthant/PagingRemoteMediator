@@ -1,4 +1,4 @@
-package com.klt.paging.ui.theme
+package com.klt.paging.theme
 
 import androidx.compose.ui.graphics.Color
 

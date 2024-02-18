@@ -2,7 +2,7 @@ package com.klt.paging.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.klt.paging.Cat
+import com.klt.paging.model.Cat
 import com.klt.paging.network.ApiService
 import okio.IOException
 import retrofit2.HttpException

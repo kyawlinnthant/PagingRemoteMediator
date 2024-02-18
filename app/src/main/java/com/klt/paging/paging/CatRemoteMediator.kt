@@ -1,11 +1,11 @@
 package com.klt.paging.paging
 
+import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
-import com.klt.paging.Cat
 import com.klt.paging.database.CatDatabase
 import com.klt.paging.database.CatEntity
 import com.klt.paging.database.RemoteKeyEntity
@@ -20,49 +20,53 @@ class CatRemoteMediator @Inject constructor(
     private val database: CatDatabase
 ) : RemoteMediator<Int, CatEntity>() {
 
-//    override suspend fun initialize(): InitializeAction {
-//        return InitializeAction.LAUNCH_INITIAL_REFRESH
-//    }
+    override suspend fun initialize(): InitializeAction {
+        return InitializeAction.LAUNCH_INITIAL_REFRESH
+    }
 
     override suspend fun load(
         loadType: LoadType, state: PagingState<Int, CatEntity>
     ): MediatorResult {
-        val page = when (val pageKeyData = getKeyPageData(loadType, state)) {
-            is MediatorResult.Success -> {
-                return pageKeyData
-            }
 
-            else -> {
-                pageKeyData as Int
-            }
-        }
+        val currentPage = getPage(loadType, state) ?: return MediatorResult.Success(
+            endOfPaginationReached = false
+        )
 
-        try {
-            val response = apiService.getCats(page = page, size = state.config.pageSize)
+        return try {
+            val response = apiService.getCats(page = currentPage, size = state.config.pageSize)
             val isEndOfList = response.isEmpty()
             database.withTransaction {
                 if (loadType == LoadType.REFRESH) {
                     database.catDao().deleteAll()
                     database.remoteKeyDao().deleteAll()
                 }
-                val prevKey = if (page == Constant.START_LOAD_PAGE) null else page - 1
-                val nextKey = if (isEndOfList) null else page + 1
+                val prevKey = if (currentPage == Constant.START_LOAD_PAGE) null else currentPage - 1
+                val nextKey = if (isEndOfList) null else currentPage + 1
                 val keys = response.map {
-                    it.toRemoteKey(nextPage = nextKey, prevPage = prevKey)
+                    it.toRemoteKey(nextPage = nextKey, prevPage = prevKey, currentPage = currentPage)
                 }
                 database.remoteKeyDao().addRemoteKeys(keys)
                 database.catDao().insertCats(response.map { it.toEntity() })
             }
-            return MediatorResult.Success(endOfPaginationReached = isEndOfList)
-        } catch (exception: IOException) {
-            return MediatorResult.Error(exception)
-        } catch (exception: HttpException) {
-            return MediatorResult.Error(exception)
+            MediatorResult.Success(endOfPaginationReached = isEndOfList)
+        } catch (e: IOException) {
+            MediatorResult.Error(e)
+        } catch (e: HttpException) {
+            MediatorResult.Error(e)
+        } catch (e: Exception) {
+            MediatorResult.Error(e)
         }
     }
 
-    private suspend fun getKeyPageData(loadType: LoadType, state: PagingState<Int, CatEntity>): Any {
+    private suspend fun getPage(
+        loadType: LoadType,
+        state: PagingState<Int, CatEntity>
+    ): Int? {
+
+        Log.e("aeiou.mediator", "$loadType")
+
         return when (loadType) {
+
             LoadType.REFRESH -> {
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
                 remoteKeys?.nextPage?.minus(1) ?: Constant.START_LOAD_PAGE
@@ -70,15 +74,12 @@ class CatRemoteMediator @Inject constructor(
 
             LoadType.APPEND -> {
                 val remoteKeys = getLastRemoteKey(state)
-                val nextKey = remoteKeys?.nextPage
-                return nextKey ?: MediatorResult.Success(endOfPaginationReached = false)
+                remoteKeys?.nextPage
             }
 
             LoadType.PREPEND -> {
                 val remoteKeys = getFirstRemoteKey(state)
-                remoteKeys?.prevPage ?: return MediatorResult.Success(
-                    endOfPaginationReached = false
-                )
+                remoteKeys?.prevPage
             }
         }
     }

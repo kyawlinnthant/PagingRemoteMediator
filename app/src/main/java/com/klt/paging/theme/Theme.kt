@@ -1,4 +1,4 @@
-package com.klt.paging.ui.theme
+package com.klt.paging.theme
 
 import android.app.Activity
 import android.os.Build
