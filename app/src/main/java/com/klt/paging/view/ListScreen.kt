@@ -56,11 +56,11 @@ fun ListScreen(
             }
         }
 
-        when (loadStates.append) {
-            is LoadState.Error -> TODO()
-            LoadState.Loading -> TODO()
-            is LoadState.NotLoading -> TODO()
-        }
+//        when (loadStates.append) {
+//            is LoadState.Error -> TODO()
+//            LoadState.Loading -> TODO()
+//            is LoadState.NotLoading -> TODO()
+//        }
 
     }
 

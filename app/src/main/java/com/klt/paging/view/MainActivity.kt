@@ -40,20 +40,23 @@ class MainActivity : ComponentActivity() {
 fun CatListScreen(
     cats: LazyPagingItems<CatEntity>
 ) {
+    
+
     cats.apply {
         Log.e("aeiou.screen", "$loadState")
         if (loadState.mediator == null) {
              FirstTimeLoading()
-            return@apply
+            return
         }
 
         if (loadState.mediator!!.refresh is LoadState.Error) {
              FirstTimeError(message = "error") {
 
             }
-            return@apply
+            return
         }
 
+        ListScreen(cats = cats.itemSnapshotList.items.map { it.toVo() }, loadStates = loadState.mediator!! )
 
 //        this.loadState.refresh
 //        this.loadState.append
