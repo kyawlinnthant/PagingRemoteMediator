@@ -32,5 +32,4 @@ fun Flow<CombinedLoadStates>.asRemotePresentationState(): Flow<RemotePresentatio
                 else -> state
             }
         }
-    }
-        .distinctUntilChanged()
+    }.distinctUntilChanged()

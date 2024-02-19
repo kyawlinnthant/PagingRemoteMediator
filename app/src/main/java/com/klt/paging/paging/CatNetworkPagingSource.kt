@@ -22,7 +22,7 @@ class CatNetworkPagingSource @Inject constructor(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Cat> {
 
-        val currentPage = params.key ?: Constant.START_LOAD_PAGE
+        val currentPage = params.key ?: Constant.START_PAGE
 
         return try {
             val response = apiService.getCats(
@@ -31,7 +31,7 @@ class CatNetworkPagingSource @Inject constructor(
             )
             LoadResult.Page(
                 data = response.map { it.toVo() },
-                prevKey = if (currentPage == Constant.START_LOAD_PAGE) null else currentPage - 1,
+                prevKey = if (currentPage == Constant.START_PAGE) null else currentPage - 1,
                 nextKey = if (response.isEmpty()) null else currentPage + 1
             )
 

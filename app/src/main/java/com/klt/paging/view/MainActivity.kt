@@ -4,11 +4,22 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -40,85 +51,184 @@ class MainActivity : ComponentActivity() {
 fun CatListScreen(
     cats: LazyPagingItems<CatEntity>
 ) {
-    
+    Log.e("cats.item", "${cats.itemCount}")
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
 
-    cats.apply {
-        Log.e("aeiou.screen", "$loadState")
-        if (loadState.mediator == null) {
-             FirstTimeLoading()
-            return
+        items(
+            count = cats.itemCount,
+        ) {
+            val currentItem = cats[it]!!
+
+            Text(
+                text = currentItem.id,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+            )
         }
 
-        if (loadState.mediator!!.refresh is LoadState.Error) {
-             FirstTimeError(message = "error") {
+        cats.apply {
+            when {
+                loadState.refresh is LoadState.Loading -> {
+                    item {
 
+                        FirstTimeLoading()
+                    }
+                }
+
+                loadState.refresh is LoadState.Error -> {
+                    val error = cats.loadState.refresh as LoadState.Error
+
+                    item {
+
+                        FirstTimeError(message = error.error.message ?: "Error") {
+
+                        }
+                    }
+
+                }
+
+                loadState.append is LoadState.Loading -> {
+                    item { CatLoadingItem() }
+                }
+
+                loadState.append is LoadState.Error -> {
+                    val error = cats.loadState.append as LoadState.Error
+                    item {
+                        CatErrorItem(
+                            message = error.error.message ?: "Error",
+                            onRetry = {
+
+                            }
+                        )
+                    }
+                }
             }
-            return
+
+            if (loadState.append.endOfPaginationReached) {
+                item {
+                    CatEndItem()
+                }
+            }
         }
-
-        ListScreen(cats = cats.itemSnapshotList.items.map { it.toVo() }, loadStates = loadState.mediator!! )
-
-//        this.loadState.refresh
-//        this.loadState.append
-//        this.loadState.prepend
-//        this.loadState.mediator
-//        this.loadState.source
-//
-//        // refresh
-//        loadState.refresh.endOfPaginationReached
-//        // append
-//        loadState.append.endOfPaginationReached
-//        // prepend
-//        loadState.prepend.endOfPaginationReached
-//        // mediator
-//        loadState.mediator?.refresh
-//        loadState.mediator?.append
-//        loadState.mediator?.prepend
-//        // source
-//        loadState.source.refresh
-//        loadState.source.append
-//        loadState.source.prepend
-
     }
+
+    /* cats.apply {
+         when (loadState.refresh) {
+             is LoadState.Loading -> {
+                 FirstTimeLoading()
+             }
+
+             is LoadState.Error -> {
+                 val error = cats.loadState.refresh as LoadState.Error
+
+                 FirstTimeError(message = error.error.message ?: "Error") {
+
+                 }
+
+             }
+
+             is LoadState.NotLoading -> {
+                 LazyColumn(
+                     modifier = Modifier.fillMaxSize()
+                 ) {
+
+                     items(
+                         count = cats.itemCount,
+                     ) {
+                         val currentItem = cats[it]!!
+
+                         Text(
+                             text = currentItem.id,
+                             style = MaterialTheme.typography.titleLarge,
+                             modifier = Modifier
+                                 .fillMaxWidth()
+                                 .padding(4.dp)
+                         )
+
+                     }
+
+
+                     when (loadState.append) {
+                         is LoadState.Loading -> {
+                             item { CatLoadingItem() }
+                         }
+
+                         is LoadState.Error -> {
+                             val error = cats.loadState.append as LoadState.Error
+                             item {
+                                 CatErrorItem(
+                                     message = error.error.message ?: "Error",
+                                     onRetry = {
+
+                                     }
+                                 )
+                             }
+                         }
+
+                         is LoadState.NotLoading -> {
+                             if (loadState.append.endOfPaginationReached) {
+                                 item {
+                                     CatEndItem()
+                                 }
+                             }
+                         }
+                     }
+
+                 }
+             }
+         }
+     }*/
+
 }
 
 
-//CombinedLoadStates(
-//refresh=Loading(endOfPaginationReached=false),
-//prepend=NotLoading(endOfPaginationReached=false),
-//append=NotLoading(endOfPaginationReached=false),
-//source=LoadStates(
-//        refresh=Loading(endOfPaginationReached=false),
-//        prepend=NotLoading(endOfPaginationReached=false),
-//        append=NotLoading(endOfPaginationReached=false)
-//),
-//mediator=null
-//)
-//
-//CombinedLoadStates(
-//refresh=NotLoading(endOfPaginationReached=false),
-//prepend=NotLoading(endOfPaginationReached=false),
-//append=NotLoading(endOfPaginationReached=false),
-//source=LoadStates(
-//    refresh=Loading(endOfPaginationReached=false),
-//    prepend=NotLoading(endOfPaginationReached=false),
-//    append=NotLoading(endOfPaginationReached=false)),
-//mediator=LoadStates(
-//    refresh=NotLoading(endOfPaginationReached=false),
-//    prepend=NotLoading(endOfPaginationReached=false),
-//    append=NotLoading(endOfPaginationReached=false))
-//)
-//
-//CombinedLoadStates(
-//    refresh=NotLoading(endOfPaginationReached=false),
-//    prepend=NotLoading(endOfPaginationReached=false),
-//    append=NotLoading(endOfPaginationReached=false),
-//    source=LoadStates(
-//        refresh=NotLoading(endOfPaginationReached=false),
-//        prepend=NotLoading(endOfPaginationReached=true),
-//        append=NotLoading(endOfPaginationReached=false)),
-//    mediator=LoadStates(
-//        refresh=NotLoading(endOfPaginationReached=false),
-//        prepend=NotLoading(endOfPaginationReached=false),
-//        append=NotLoading(endOfPaginationReached=false))
-//)
+@Composable
+private fun CatLoadingItem(
+    modifier: Modifier = Modifier
+
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp), contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun CatErrorItem(
+    modifier: Modifier = Modifier,
+    message: String,
+    onRetry: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = message)
+        OutlinedButton(onClick = onRetry) {
+            Text(text = "Retry")
+        }
+    }
+}
+
+@Composable
+private fun CatEndItem(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp), contentAlignment = Alignment.Center
+    ) {
+        Text(text = "-- END --")
+    }
+}

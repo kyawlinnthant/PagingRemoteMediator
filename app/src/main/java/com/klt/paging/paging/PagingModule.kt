@@ -16,12 +16,10 @@ object PagingModule {
     @Provides
     @Singleton
     fun providePagingConfig() = PagingConfig(
-        pageSize = Constant.LOAD_SIZE,
+        pageSize = Constant.PAGE_SIZE, // 10
         enablePlaceholders = false,
-//        prefetchDistance = 30,
-//        initialLoadSize = 10,
-//        maxSize = Constant.LOAD_SIZE + ( Constant.LOAD_SIZE * 2 ),
-//        jumpThreshold = 1,
+//        prefetchDistance = Constant.PREFETCH_DISTANCE,
+//        maxSize = Constant.PAGE_SIZE + (2 * Constant.PREFETCH_DISTANCE), //pageSize + (2 * prefetchDistance )
     )
 
     @Provides
@@ -36,5 +34,6 @@ object PagingModule {
 
     @Provides
     @Singleton
-    fun provideNetworkPagingSource(apiService: ApiService) = CatNetworkPagingSource(apiService = apiService)
+    fun provideNetworkPagingSource(apiService: ApiService) =
+        CatNetworkPagingSource(apiService = apiService)
 }

@@ -22,7 +22,7 @@ class CatRepositoryImpl @Inject constructor(
         val dbSource = { database.catDao().getAll() }
         return Pager(
             config = config,
-            initialKey = Constant.START_LOAD_PAGE,
+            initialKey = Constant.START_PAGE,
             remoteMediator = remoteMediator,
             pagingSourceFactory = dbSource,
         ).flow
