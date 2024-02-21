@@ -1,4 +1,4 @@
-package com.klt.paging.view
+package com.klt.paging.view.fullscreen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

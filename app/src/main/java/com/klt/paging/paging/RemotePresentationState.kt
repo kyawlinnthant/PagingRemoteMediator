@@ -2,6 +2,8 @@ package com.klt.paging.paging
 
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import com.klt.paging.database.CatEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -33,3 +35,4 @@ fun Flow<CombinedLoadStates>.asRemotePresentationState(): Flow<RemotePresentatio
             }
         }
     }.distinctUntilChanged()
+

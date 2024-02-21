@@ -16,7 +16,7 @@ class MainViewModel @Inject constructor(
     private val repo: CatRepository
 ) : ViewModel() {
     val cats: Flow<PagingData<CatEntity>> = repo.getCats()
-//        .distinctUntilChanged()
+        .distinctUntilChanged()
         .cachedIn(viewModelScope)
 
 }

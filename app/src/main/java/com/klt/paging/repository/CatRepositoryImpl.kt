@@ -21,7 +21,16 @@ class CatRepositoryImpl @Inject constructor(
 
         val dbSource = { database.catDao().getAll() }
         return Pager(
-            config = config,
+//            config = config,
+            config = PagingConfig(
+                pageSize = Constant.PAGE_SIZE, // 10
+//        enablePlaceholders = false,
+                initialLoadSize = Constant.INITIAL_LOAD_SIZE, // 20
+                maxSize = PagingConfig.MAX_SIZE_UNBOUNDED,
+//        jumpThreshold = 1,
+//        prefetchDistance = 5,
+//        maxSize = Constant.PAGE_SIZE + (2 * Constant.PREFETCH_DISTANCE), //pageSize + (2 * prefetchDistance )
+            ),
             initialKey = Constant.START_PAGE,
             remoteMediator = remoteMediator,
             pagingSourceFactory = dbSource,

@@ -11,6 +11,7 @@ import com.klt.paging.database.CatEntity
 import com.klt.paging.database.RemoteKeyEntity
 import com.klt.paging.network.ApiService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okio.IOException
 import retrofit2.HttpException
@@ -23,21 +24,31 @@ class CatRemoteMediator @Inject constructor(
 ) : RemoteMediator<Int, CatEntity>() {
 
     override suspend fun initialize(): InitializeAction {
-        return InitializeAction.LAUNCH_INITIAL_REFRESH
+        val shouldFetch = shouldFetchInitialPage()
+        Log.e("kyaw.mediator.initialize", "$shouldFetch")
+        return if (shouldFetchInitialPage()) InitializeAction.LAUNCH_INITIAL_REFRESH else InitializeAction.SKIP_INITIAL_REFRESH
+    }
+
+    private suspend fun shouldFetchInitialPage(): Boolean {
+        return database.catDao().queryCats().isEmpty()
     }
 
     override suspend fun load(
         loadType: LoadType, state: PagingState<Int, CatEntity>
     ): MediatorResult {
 
+        Log.e("kyaw.mediator.load1", "$loadType : $state")
+
         val currentPage = getPage(loadType, state) ?: return MediatorResult.Success(
             endOfPaginationReached = false
         )
+        Log.e("kyaw.mediator.load2", "page  = $currentPage")
 
         return try {
+            delay(1000L)
             val response = apiService.getCats(page = currentPage, size = state.config.pageSize)
             val isEndOfList = response.isEmpty()
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 database.withTransaction {
                     if (loadType == LoadType.REFRESH) {
                         database.catDao().deleteAll()
@@ -56,7 +67,6 @@ class CatRemoteMediator @Inject constructor(
                     database.catDao().insertCats(response.map { it.toEntity() })
                 }
             }
-
             MediatorResult.Success(endOfPaginationReached = isEndOfList)
         } catch (e: IOException) {
             MediatorResult.Error(e)
@@ -76,18 +86,21 @@ class CatRemoteMediator @Inject constructor(
 
             // loading
             LoadType.REFRESH -> {
+                Log.e("kyaw.mediator.refresh", "$loadType")
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
                 remoteKeys?.nextPage?.minus(1) ?: Constant.START_PAGE
             }
 
             // has data, load more
             LoadType.APPEND -> {
+                Log.e("kyaw.mediator.append", "$loadType")
                 val remoteKeys = getLastRemoteKey(state)
                 remoteKeys?.nextPage
             }
 
             // has data, load previous
             LoadType.PREPEND -> {
+                Log.e("kyaw.mediator.prepend", "$loadType")
                 val remoteKeys = getFirstRemoteKey(state)
                 remoteKeys?.prevPage
             }
@@ -97,6 +110,7 @@ class CatRemoteMediator @Inject constructor(
     private suspend fun getRemoteKeyClosestToCurrentPosition(state: PagingState<Int, CatEntity>): RemoteKeyEntity? {
         return state.anchorPosition?.let { position ->
             state.closestItemToPosition(position)?.id?.let { catId ->
+                Log.e("kyaw.mediator.refresh.key", catId)
                 database.remoteKeyDao().getRemoteKey(catId)
             }
         }

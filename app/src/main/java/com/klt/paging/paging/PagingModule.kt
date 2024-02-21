@@ -17,8 +17,11 @@ object PagingModule {
     @Singleton
     fun providePagingConfig() = PagingConfig(
         pageSize = Constant.PAGE_SIZE, // 10
-        enablePlaceholders = false,
-//        prefetchDistance = Constant.PREFETCH_DISTANCE,
+//        enablePlaceholders = false,
+        initialLoadSize = Constant.INITIAL_LOAD_SIZE, // 20
+        maxSize = PagingConfig.MAX_SIZE_UNBOUNDED,
+//        jumpThreshold = 1,
+//        prefetchDistance = 5,
 //        maxSize = Constant.PAGE_SIZE + (2 * Constant.PREFETCH_DISTANCE), //pageSize + (2 * prefetchDistance )
     )
 

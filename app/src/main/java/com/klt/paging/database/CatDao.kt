@@ -16,7 +16,7 @@ interface CatDao {
     suspend fun insertCats(cats: List<CatEntity>)
 
     @Query("SELECT * FROM ${CatEntity.TABLE_NAME}")
-    fun queryCats(): List<CatEntity>
+    suspend fun queryCats(): List<CatEntity>
 
     @Query("SELECT * FROM ${CatEntity.TABLE_NAME}")
     fun getAll(): PagingSource<Int, CatEntity>
