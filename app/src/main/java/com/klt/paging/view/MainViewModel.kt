@@ -14,6 +14,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val repo: CatRepository
 ) : ViewModel() {
+
     val cats = repo.getCats()
         .flow
         .map { pagingData ->

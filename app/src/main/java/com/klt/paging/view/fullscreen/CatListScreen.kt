@@ -1,6 +1,7 @@
 package com.klt.paging.view.fullscreen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -19,7 +20,8 @@ import com.klt.paging.view.item.CatLoadingItem
 
 @Composable
 fun CatListScreen(
-    cats: LazyPagingItems<CatVo>
+    cats: LazyPagingItems<CatVo>,
+    modifier: Modifier = Modifier,
 ) {
 
     val lazyListState = rememberLazyListState()
@@ -27,38 +29,48 @@ fun CatListScreen(
 
     cats.apply {
 
-        LazyVerticalStaggeredGrid(
-            state = lazyGridState,
-            columns = StaggeredGridCells.Fixed(2),
-            verticalItemSpacing = 4.dp,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            content = {
-                items(count = cats.itemCount) { index ->
-                    val currentItem = cats[index]
-                    currentItem?.let {
+        Column(
+            modifier = modifier.fillMaxSize(),
+        ) {
 
-                        CatItem(index = index, cat = it)
+            LazyVerticalStaggeredGrid(
+                state = lazyGridState,
+                columns = StaggeredGridCells.Fixed(2),
+                verticalItemSpacing = 4.dp,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                content = {
+                    items(count = cats.itemCount) { index ->
+                        val currentItem = cats[index]
+                        currentItem?.let {
+
+                            CatItem(index = index, cat = it)
+                        }
                     }
-                }
-                item {
-                    if (loadState.append is LoadState.Loading) {
-                        CatLoadingItem()
+                    item {
+                        if (loadState.append is LoadState.Loading) {
+                            CatLoadingItem()
+                        }
                     }
-                }
-                item {
-                    if (loadState.append is LoadState.Error) {
-                        val error = (loadState.append as LoadState.Error).error.message
-                        CatErrorItem(message = error ?: "Something's wrong") {}
+                    item {
+                        if (loadState.append is LoadState.Error) {
+                            val error = (loadState.append as LoadState.Error).error.message
+                            CatErrorItem(message = error ?: "Something's wrong") {
+                                retry()
+                            }
+                        }
                     }
-                }
-                item {
-                    if (loadState.append.endOfPaginationReached) {
-                        CatEndItem()
+                    item {
+                        if (loadState.append.endOfPaginationReached) {
+                            CatEndItem()
+                        }
                     }
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+                },
+                modifier = modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            )
+        }
+
 
         /*LazyColumn(
             modifier = Modifier.fillMaxSize(),

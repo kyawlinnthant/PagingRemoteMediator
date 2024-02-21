@@ -43,6 +43,14 @@ fun MainContent(
     cats: LazyPagingItems<CatVo>
 ) {
 
+    val combinedState = cats.loadState
+
+    combinedState.refresh // network, new
+    combinedState.prepend // ady in db, dropped by maxSize
+    combinedState.append // new data from source, db
+    combinedState.source // db
+    combinedState.mediator // offline, online
+
     // todo need to debug full screen error
     cats.apply {
         when (loadState.refresh) {
@@ -51,7 +59,9 @@ fun MainContent(
                     val error = (loadState.refresh as LoadState.Error).error.message
                     FirstTimeError(
                         message = error ?: "Something's wrong"
-                    ) {}
+                    ) {
+                        retry()
+                    }
                 }
             }
 

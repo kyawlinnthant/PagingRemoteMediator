@@ -12,6 +12,7 @@ import com.klt.paging.model.toEntity
 import com.klt.paging.model.toRemoteKey
 import com.klt.paging.network.ApiService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okio.IOException
 import retrofit2.HttpException
@@ -40,6 +41,7 @@ class CatRemoteMediator @Inject constructor(
         )
 
         return try {
+            delay(1000L)
             val response = apiService.getCats(page = currentPage, size = state.config.pageSize)
             val isEndOfList = response.isEmpty()
             withContext(Dispatchers.IO) {
