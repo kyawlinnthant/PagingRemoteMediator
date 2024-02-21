@@ -1,6 +1,7 @@
 package com.klt.paging.view
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +45,7 @@ fun MainContent(
 ) {
 
     val combinedState = cats.loadState
+    Log.e("mah", "$combinedState")
 
     combinedState.refresh // network, new
     combinedState.prepend // ady in db, dropped by maxSize
@@ -55,7 +57,7 @@ fun MainContent(
     cats.apply {
         when (loadState.refresh) {
             is LoadState.Error -> {
-                if (loadState.mediator != null) {
+                if (loadState.mediator?.refresh is LoadState.Error) {
                     val error = (loadState.refresh as LoadState.Error).error.message
                     FirstTimeError(
                         message = error ?: "Something's wrong"
@@ -66,8 +68,9 @@ fun MainContent(
             }
 
             LoadState.Loading -> {
-                if (loadState.mediator != null)
+                if (loadState.mediator?.refresh is LoadState.Loading) {
                     FirstTimeLoading()
+                }
             }
 
             is LoadState.NotLoading -> CatListScreen(cats = cats)
