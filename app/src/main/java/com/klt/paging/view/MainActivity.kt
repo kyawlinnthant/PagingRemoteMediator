@@ -3,6 +3,7 @@ package com.klt.paging.view
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,15 +19,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.klt.paging.database.CatEntity
-import com.klt.paging.paging.FullScreenState
-import com.klt.paging.paging.PagingItemFullScreenState
-import com.klt.paging.paging.asLoadState
+import com.klt.paging.model.CatVo
 import com.klt.paging.theme.PagingTheme
-import com.klt.paging.view.fullscreen.CatListScreen
-import com.klt.paging.view.fullscreen.EmptyList
 import com.klt.paging.view.fullscreen.FirstTimeError
 import com.klt.paging.view.fullscreen.FirstTimeLoading
+import com.klt.paging.view.item.CatEndItem
 import com.klt.paging.view.item.CatErrorItem
 import com.klt.paging.view.item.CatLoadingItem
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,72 +47,74 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun MainContent(
-    cats: LazyPagingItems<CatEntity>
+    cats: LazyPagingItems<CatVo>
 ) {
 
     val lazyListState = rememberLazyListState()
 
     cats.apply {
 
-        when(loadState.refresh){
-            is LoadState.Error -> FirstTimeError(message = "First time error") {
-
-            }
-            LoadState.Loading -> FirstTimeLoading()
-            is LoadState.NotLoading -> Unit
+        if (loadState.refresh is LoadState.Error && loadState.mediator == null) {
+            val error = (loadState.refresh as LoadState.Error).error.message
+            FirstTimeError(
+                message = error ?: "Something's wrong"
+            ) {}
+            return
         }
+        if (loadState.refresh is LoadState.Loading && loadState.mediator == null) {
+            FirstTimeLoading()
+            return
+        }
+
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            state = lazyListState
+            state = lazyListState,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
+            item {
+                if(loadState.source.prepend is LoadState.Loading){
+                    CatLoadingItem()
+                }
+            }
             items(
                 count = cats.itemCount,
             ) {
                 val currentItem = cats[it]
                 currentItem?.let { cat ->
                     Text(
-                        text = cat.id,
+                        text = "${it+1}  = ${cat.id}",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(4.dp)
+                            .padding(16.dp)
                     )
                 }
 
             }
-
-            when  {
-                loadState.refresh is LoadState.Loading -> item {
+            item {
+                if (loadState.append is LoadState.Loading) {
                     CatLoadingItem()
                 }
-                loadState.append is LoadState.Error -> item {
-                    CatErrorItem(message = "this is error") {
-                        
-                    }
+            }
+            item {
+                if (loadState.append is LoadState.Error) {
+                    val error = (loadState.append as LoadState.Error).error.message
+                    CatErrorItem(message = error ?: "Something's wrong") {}
+                }
+            }
+            item {
+                if (loadState.append.endOfPaginationReached) {
+                    CatEndItem()
                 }
             }
         }
     }
 
-
-
-//    val state = cats.asLoadState()
-//    when (val type = state as FullScreenState) {
-//        PagingItemFullScreenState.EmptyList -> EmptyList()
-//        is PagingItemFullScreenState.FirstTimeError -> FirstTimeError(
-//            message = type.message,
-//            onRetry = {})
-//
-//        PagingItemFullScreenState.FirstTimeLoading -> FirstTimeLoading()
-//        is PagingItemFullScreenState.ShowList -> CatListScreen(
-//            cats = cats.itemSnapshotList.items,
-//            itemState = type.itemState
-//        )
-//    }
 }
 
 

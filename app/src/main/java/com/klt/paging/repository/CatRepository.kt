@@ -1,9 +1,8 @@
 package com.klt.paging.repository
 
-import androidx.paging.PagingData
+import androidx.paging.Pager
 import com.klt.paging.database.CatEntity
-import kotlinx.coroutines.flow.Flow
 
 interface CatRepository {
-    fun getCats() : Flow<PagingData<CatEntity>>
+    fun getCats(): Pager<Int, CatEntity>
 }

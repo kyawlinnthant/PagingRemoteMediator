@@ -5,4 +5,5 @@ object Constant {
     const val PAGE_SIZE = 10
     const val PREFETCH_DISTANCE = 2
     const val INITIAL_LOAD_SIZE = 50
+    const val MAX_LOAD_SIZE = 100
 }

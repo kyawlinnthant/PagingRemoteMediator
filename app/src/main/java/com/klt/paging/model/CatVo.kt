@@ -1,6 +1,6 @@
 package com.klt.paging.model
 
-data class Cat(
+data class CatVo(
     val id : String,
     val photo : String,
 )

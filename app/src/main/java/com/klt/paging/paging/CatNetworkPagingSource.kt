@@ -2,7 +2,8 @@ package com.klt.paging.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.klt.paging.model.Cat
+import com.klt.paging.model.CatVo
+import com.klt.paging.model.toVo
 import com.klt.paging.network.ApiService
 import okio.IOException
 import retrofit2.HttpException
@@ -10,9 +11,9 @@ import javax.inject.Inject
 
 class CatNetworkPagingSource @Inject constructor(
     private val apiService: ApiService
-) : PagingSource<Int, Cat>() {
+) : PagingSource<Int, CatVo>() {
 
-    override fun getRefreshKey(state: PagingState<Int, Cat>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, CatVo>): Int? {
 
         return state.anchorPosition?.let { anchorPosition ->
             state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
@@ -20,7 +21,7 @@ class CatNetworkPagingSource @Inject constructor(
         }
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Cat> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CatVo> {
 
         val currentPage = params.key ?: Constant.START_PAGE
 

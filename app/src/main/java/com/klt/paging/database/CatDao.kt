@@ -19,7 +19,7 @@ interface CatDao {
     suspend fun queryCats(): List<CatEntity>
 
     @Query("SELECT * FROM ${CatEntity.TABLE_NAME}")
-    fun getAll(): PagingSource<Int, CatEntity>
+    fun pagingSource(): PagingSource<Int, CatEntity>
 
     @Query("DELETE FROM ${CatEntity.TABLE_NAME}")
     suspend fun deleteAll()

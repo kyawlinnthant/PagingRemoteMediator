@@ -9,6 +9,8 @@ import androidx.room.withTransaction
 import com.klt.paging.database.CatDatabase
 import com.klt.paging.database.CatEntity
 import com.klt.paging.database.RemoteKeyEntity
+import com.klt.paging.model.toEntity
+import com.klt.paging.model.toRemoteKey
 import com.klt.paging.network.ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -45,7 +47,7 @@ class CatRemoteMediator @Inject constructor(
         Log.e("kyaw.mediator.load2", "page  = $currentPage")
 
         return try {
-            delay(1000L)
+            delay(20000L)
             val response = apiService.getCats(page = currentPage, size = state.config.pageSize)
             val isEndOfList = response.isEmpty()
             withContext(Dispatchers.IO) {
@@ -88,7 +90,7 @@ class CatRemoteMediator @Inject constructor(
             LoadType.REFRESH -> {
                 Log.e("kyaw.mediator.refresh", "$loadType")
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
-                remoteKeys?.nextPage?.minus(1) ?: Constant.START_PAGE
+                remoteKeys?.nextPage ?: Constant.START_PAGE
             }
 
             // has data, load more
