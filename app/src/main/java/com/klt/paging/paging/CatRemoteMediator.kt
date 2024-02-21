@@ -1,6 +1,5 @@
 package com.klt.paging.paging
 
-import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
@@ -13,7 +12,6 @@ import com.klt.paging.model.toEntity
 import com.klt.paging.model.toRemoteKey
 import com.klt.paging.network.ApiService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okio.IOException
 import retrofit2.HttpException
@@ -26,8 +24,6 @@ class CatRemoteMediator @Inject constructor(
 ) : RemoteMediator<Int, CatEntity>() {
 
     override suspend fun initialize(): InitializeAction {
-        val shouldFetch = shouldFetchInitialPage()
-        Log.e("kyaw.mediator.initialize", "$shouldFetch")
         return if (shouldFetchInitialPage()) InitializeAction.LAUNCH_INITIAL_REFRESH else InitializeAction.SKIP_INITIAL_REFRESH
     }
 
@@ -39,15 +35,11 @@ class CatRemoteMediator @Inject constructor(
         loadType: LoadType, state: PagingState<Int, CatEntity>
     ): MediatorResult {
 
-        Log.e("kyaw.mediator.load1", "$loadType : $state")
-
         val currentPage = getPage(loadType, state) ?: return MediatorResult.Success(
             endOfPaginationReached = false
         )
-        Log.e("kyaw.mediator.load2", "page  = $currentPage")
 
         return try {
-            delay(20000L)
             val response = apiService.getCats(page = currentPage, size = state.config.pageSize)
             val isEndOfList = response.isEmpty()
             withContext(Dispatchers.IO) {
@@ -88,21 +80,18 @@ class CatRemoteMediator @Inject constructor(
 
             // loading
             LoadType.REFRESH -> {
-                Log.e("kyaw.mediator.refresh", "$loadType")
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
-                remoteKeys?.nextPage ?: Constant.START_PAGE
+                remoteKeys?.currentPage ?: Constant.START_PAGE
             }
 
             // has data, load more
             LoadType.APPEND -> {
-                Log.e("kyaw.mediator.append", "$loadType")
                 val remoteKeys = getLastRemoteKey(state)
                 remoteKeys?.nextPage
             }
 
             // has data, load previous
             LoadType.PREPEND -> {
-                Log.e("kyaw.mediator.prepend", "$loadType")
                 val remoteKeys = getFirstRemoteKey(state)
                 remoteKeys?.prevPage
             }
@@ -112,7 +101,6 @@ class CatRemoteMediator @Inject constructor(
     private suspend fun getRemoteKeyClosestToCurrentPosition(state: PagingState<Int, CatEntity>): RemoteKeyEntity? {
         return state.anchorPosition?.let { position ->
             state.closestItemToPosition(position)?.id?.let { catId ->
-                Log.e("kyaw.mediator.refresh.key", catId)
                 database.remoteKeyDao().getRemoteKey(catId)
             }
         }

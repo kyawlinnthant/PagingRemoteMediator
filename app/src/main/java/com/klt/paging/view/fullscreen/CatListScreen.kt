@@ -1,64 +1,108 @@
 package com.klt.paging.view.fullscreen
 
-import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.klt.paging.database.CatEntity
-import com.klt.paging.paging.PagingLazyItemState
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import com.klt.paging.model.CatVo
 import com.klt.paging.view.item.CatEndItem
 import com.klt.paging.view.item.CatErrorItem
+import com.klt.paging.view.item.CatItem
 import com.klt.paging.view.item.CatLoadingItem
 
 @Composable
 fun CatListScreen(
-    cats: List<CatEntity>,
-    itemState: PagingLazyItemState
+    cats: LazyPagingItems<CatVo>
 ) {
+
     val lazyListState = rememberLazyListState()
+    val lazyGridState = rememberLazyStaggeredGridState()
 
-    Log.e("antibiotic", "${cats.size}")
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        state = lazyListState
-    ) {
+    cats.apply {
 
-        items(
-            count = cats.size,
-            key = { cats[it].id }
+        LazyVerticalStaggeredGrid(
+            state = lazyGridState,
+            columns = StaggeredGridCells.Fixed(2),
+            verticalItemSpacing = 4.dp,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            content = {
+                items(count = cats.itemCount) { index ->
+                    val currentItem = cats[index]
+                    currentItem?.let {
+
+                        CatItem(index = index, cat = it)
+                    }
+                }
+                item {
+                    if (loadState.append is LoadState.Loading) {
+                        CatLoadingItem()
+                    }
+                }
+                item {
+                    if (loadState.append is LoadState.Error) {
+                        val error = (loadState.append as LoadState.Error).error.message
+                        CatErrorItem(message = error ?: "Something's wrong") {}
+                    }
+                }
+                item {
+                    if (loadState.append.endOfPaginationReached) {
+                        CatEndItem()
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        /*LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = lazyListState,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val currentItem = cats[it]
-            Text(
-                text = currentItem.id,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp)
-            )
-        }
 
-        when (itemState) {
-            PagingLazyItemState.End -> item {
-                CatEndItem()
-            }
-
-            is PagingLazyItemState.Error -> item {
-                CatErrorItem(message = itemState.message) {
-
+            item {
+                if (loadState.source.prepend is LoadState.Loading) {
+                    CatLoadingItem()
                 }
             }
+            items(
+                count = cats.itemCount,
+            ) {
+                val currentItem = cats[it]
+                currentItem?.let { cat ->
+                    Text(
+                        text = "${it + 1}  = ${cat.id}",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
 
-            PagingLazyItemState.Loading -> item {
-                CatLoadingItem()
             }
-        }
-
+            item {
+                if (loadState.append is LoadState.Loading) {
+                    CatLoadingItem()
+                }
+            }
+            item {
+                if (loadState.append is LoadState.Error) {
+                    val error = (loadState.append as LoadState.Error).error.message
+                    CatErrorItem(message = error ?: "Something's wrong") {}
+                }
+            }
+            item {
+                if (loadState.append.endOfPaginationReached) {
+                    CatEndItem()
+                }
+            }
+        }*/
     }
+
 }

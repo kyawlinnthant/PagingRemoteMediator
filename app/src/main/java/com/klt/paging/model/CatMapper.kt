@@ -19,9 +19,9 @@ fun CatDTO.toRemoteKey(
 }
 
 fun CatDTO.toVo(): CatVo {
-    return CatVo(id = id, photo = url)
+    return CatVo(id = id, photo = url, width = width, height = height)
 }
 
-fun CatEntity.toVo() : CatVo{
-    return CatVo(id = id, photo = url)
+fun CatEntity.toVo(): CatVo {
+    return CatVo(id = id, photo = url, width = width, height = height)
 }
