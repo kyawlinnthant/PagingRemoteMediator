@@ -5,4 +5,6 @@ interface MockService {
         page : Int,
         size : Int
     ) : List<MockDto>
+
+    fun getTotal() : Int
 }

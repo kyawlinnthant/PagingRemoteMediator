@@ -13,7 +13,10 @@ interface MockDao {
     suspend fun insertMocks(mocks: List<MockDataEntity>)
 
     @Query("SELECT * FROM ${MockDataEntity.TB_NAME}")
-    fun getMocks(): PagingSource<Int, MockDataEntity>
+    fun pagingSource(): PagingSource<Int, MockDataEntity>
+
+    @Query("SELECT * FROM ${MockDataEntity.TB_NAME}")
+    suspend fun getMocks(): List<MockDataEntity>
 
     @Query("DELETE FROM ${MockDataEntity.TB_NAME}")
     suspend fun deleteAll()

@@ -12,48 +12,56 @@ import org.junit.jupiter.api.Test
 
 
 class MockServiceTest {
-    private lateinit var service : MockServiceImpl
+    private lateinit var service: MockServiceImpl
 
     @BeforeEach
     fun setup() {
         service = MockServiceImpl()
     }
 
+
     @Test
-    @DisplayName("correct page and size returns correct data")
-    fun `test one`() = runTest{
-        val first10 = service.getData(
-            page = 1,
-            size = 3
+    @DisplayName("page 0 is not defined returns empty")
+    fun `page zero`() = runTest {
+        val result = service.getData(
+            page = 0,
+            size = 100
         )
-        println(first10)
-        assertThat(first10).size().isEqualTo(3)
-        val second10 = service.getData(
-            page = 2,
-            size = 3
-        )
-        println(second10)
-        assertThat(second10).size().isEqualTo(3)
+        assertThat(result).isEmpty()
     }
 
     @Test
-    @DisplayName("incorrect page and size returns empty list")
-    fun `test two`() = runTest{
-        val largerPage = service.getData(
-            page = 1001,
-            size = 10
-        )
-        assertThat(largerPage).isEmpty()
-        val smallerPage = service.getData(
-            page = 0,
-            size = 10
-        )
-        assertThat(smallerPage).isEmpty()
-        val largerSize = service.getData(
+    @DisplayName("page 1 and size less than source returns required data of size")
+    fun `page 1 with size less than source`() = runTest {
+        val size = 15
+        val result = service.getData(
             page = 1,
-            size = 1001
+            size = size
         )
-        assertThat(largerSize).isEmpty()
+        assertThat(result).size().isEqualTo(size)
+    }
+
+    @Test
+    @DisplayName("request more data than we can provide returns remaining data")
+    fun `more data`() = runTest {
+        val page = 2
+        val size = 800
+        val remaining = service.getTotal() - (page - 1) * size
+        val result = service.getData(
+            page = page,
+            size = size
+        )
+        assertThat(result).size().isEqualTo(remaining)
+    }
+
+    @Test
+    @DisplayName("request more data from start than we can provide returns all the data")
+    fun `more data with page one`() = runTest {
+        val result = service.getData(
+            page = 1,
+            size = 4000
+        )
+        assertThat(result).size().isEqualTo(service.getTotal())
     }
 
 }

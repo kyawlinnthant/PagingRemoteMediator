@@ -1,5 +1,6 @@
 package com.klt.paging.paging
 
+import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
@@ -25,11 +26,19 @@ class MockMediator @Inject constructor(
 
     private val start = 1
     override suspend fun initialize(): InitializeAction {
-
-        return if (shouldSkipInitialRefresh())
+//        return InitializeAction.LAUNCH_INITIAL_REFRESH
+        return if (hadData())
             InitializeAction.SKIP_INITIAL_REFRESH
         else InitializeAction.LAUNCH_INITIAL_REFRESH
 
+//        return if (shouldSkipInitialRefresh())
+//            InitializeAction.SKIP_INITIAL_REFRESH
+//        else InitializeAction.LAUNCH_INITIAL_REFRESH
+
+    }
+
+    private suspend fun hadData() : Boolean{
+        return source.mockDao().getMocks().isNotEmpty()
     }
 
     private suspend fun shouldSkipInitialRefresh(
@@ -43,6 +52,8 @@ class MockMediator @Inject constructor(
         loadType: LoadType,
         state: PagingState<Int, MockDataEntity>
     ): MediatorResult {
+
+        Log.e("shit.mediator.state","$loadType")
         val currentPage = getPage(
             loadType = loadType,
             state = state
@@ -51,7 +62,8 @@ class MockMediator @Inject constructor(
         )
 
         return try {
-            delay(1000L)
+            delay(3000L)
+            Log.e("shit.network","$currentPage , ${state.config.pageSize}")
             val response = service.getData(
                 page = currentPage,
                 size = state.config.pageSize
@@ -98,7 +110,7 @@ class MockMediator @Inject constructor(
             // loading
             LoadType.REFRESH -> {
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
-                remoteKeys?.currentPage ?: start
+                remoteKeys?.nextPage?.minus(1) ?: start
             }
 
             // has data, load more
@@ -109,8 +121,9 @@ class MockMediator @Inject constructor(
 
             // has data, load previous
             LoadType.PREPEND -> {
-                val remoteKeys = getFirstRemoteKey(state)
-                remoteKeys?.prevPage
+                null
+//                val remoteKeys = getFirstRemoteKey(state)
+//                remoteKeys?.prevPage
             }
         }
     }

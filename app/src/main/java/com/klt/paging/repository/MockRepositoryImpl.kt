@@ -18,11 +18,11 @@ class MockRepositoryImpl @Inject constructor(
     override fun getData(): Pager<Int, MockDataEntity> {
 
         //  Maximum size must be at least pageSize + 2*prefetchDist, pageSize=10, prefetchDist=10, maxSize=20
-        val dbSource = { source.mockDao().getMocks() }
+        val dbSource = { source.mockDao().pagingSource() }
         val config = PagingConfig(
-            pageSize = 500,
-//            prefetchDistance = 10,
-//            initialLoadSize = 10,
+            pageSize = 10,
+//            prefetchDistance = 50,
+//            initialLoadSize = 50,
 //            jumpThreshold = 1,
 //            enablePlaceholders = true,
 //            maxSize = PagingConfig.MAX_SIZE_UNBOUNDED
