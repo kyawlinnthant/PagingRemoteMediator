@@ -1,4 +1,4 @@
-package com.klt.paging.repository
+package com.klt.paging.mock
 
 import dagger.Binds
 import dagger.Module
@@ -8,9 +8,8 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface RepoModule {
+interface ServiceModule {
     @Binds
     @Singleton
-    fun bindsCatRepo(repo: MockRepositoryImpl): MockRepository
-
+    fun bindsService(source: MockServiceImpl): MockService
 }
