@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okio.IOException
 import retrofit2.HttpException
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
@@ -24,12 +25,18 @@ class CatRemoteMediator @Inject constructor(
     private val database: CatDatabase,
 ) : RemoteMediator<Int, CatEntity>() {
 
-    override suspend fun initialize(): InitializeAction {
-        return if (shouldFetchInitialPage()) InitializeAction.LAUNCH_INITIAL_REFRESH else InitializeAction.SKIP_INITIAL_REFRESH
-    }
+//    override suspend fun initialize(): InitializeAction {
+//
+//        return if (shouldSkipInitialRefresh())
+//            InitializeAction.SKIP_INITIAL_REFRESH
+//        else InitializeAction.LAUNCH_INITIAL_REFRESH
+//    }
 
-    private suspend fun shouldFetchInitialPage(): Boolean {
-        return database.catDao().queryCats().isEmpty()
+    private suspend fun shouldSkipInitialRefresh(
+        cacheTimeout: Long = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
+    ): Boolean {
+        return System.currentTimeMillis() - (database.remoteKeyDao().getCreationTime()
+            ?: 0) < cacheTimeout
     }
 
     override suspend fun load(
@@ -44,25 +51,25 @@ class CatRemoteMediator @Inject constructor(
             delay(1000L)
             val response = apiService.getCats(page = currentPage, size = state.config.pageSize)
             val isEndOfList = response.isEmpty()
-            withContext(Dispatchers.IO) {
-                database.withTransaction {
-                    if (loadType == LoadType.REFRESH) {
-                        database.catDao().deleteAll()
-                        database.remoteKeyDao().deleteAll()
-                    }
-                    val prevKey = if (currentPage == Constant.START_PAGE) null else currentPage - 1
-                    val nextKey = if (isEndOfList) null else currentPage + 1
-                    val keys = response.map {
-                        it.toRemoteKey(
-                            nextPage = nextKey,
-                            prevPage = prevKey,
-                            currentPage = currentPage
-                        )
-                    }
-                    database.remoteKeyDao().addRemoteKeys(keys)
-                    database.catDao().insertCats(response.map { it.toEntity() })
+
+            database.withTransaction {
+                if (loadType == LoadType.REFRESH) {
+                    database.catDao().deleteAll()
+                    database.remoteKeyDao().deleteKeys()
                 }
+                val prevKey = if (currentPage > Constant.START_PAGE) currentPage -1 else null
+                val nextKey = if (isEndOfList) null else currentPage + 1
+                val keys = response.map {
+                    it.toRemoteKey(
+                        nextPage = nextKey,
+                        prevPage = prevKey,
+                        currentPage = currentPage
+                    )
+                }
+                database.remoteKeyDao().insertKeys(keys)
+                database.catDao().insertCats(response.map { it.toEntity() })
             }
+
             MediatorResult.Success(endOfPaginationReached = isEndOfList)
         } catch (e: IOException) {
             MediatorResult.Error(e)

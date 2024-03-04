@@ -4,8 +4,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -32,7 +36,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainContent(cats = cats)
+                    CatListScreen(cats = cats)
                 }
             }
         }
@@ -44,44 +48,34 @@ fun MainContent(
     cats: LazyPagingItems<CatVo>
 ) {
 
-    val combinedState = cats.loadState
-    Log.e("mah", "$combinedState")
+    Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            cats.apply {
 
-    combinedState.refresh // network, new
-    combinedState.prepend // ady in db, dropped by maxSize
-    combinedState.append // new data from source, db
-    combinedState.source // db
-    combinedState.mediator // offline, online
+                val firstTimeLoadState = this.loadState.mediator
 
-    // todo need to debug full screen error
-    cats.apply {
-        when (loadState.refresh) {
-            is LoadState.Error -> {
-                if (loadState.mediator?.refresh is LoadState.Error) {
-                    val error = (loadState.refresh as LoadState.Error).error.message
-                    FirstTimeError(
-                        message = error ?: "Something's wrong"
-                    ) {
-                        retry()
-                    }
-                }
-            }
-
-            LoadState.Loading -> {
-                if (loadState.mediator?.refresh is LoadState.Loading) {
+                // first time Loading
+                if (firstTimeLoadState?.refresh is LoadState.Loading) {
                     FirstTimeLoading()
                 }
-            }
+                // first time error
+                if (firstTimeLoadState?.refresh is LoadState.Error) {
+                    val error = (firstTimeLoadState.refresh as LoadState.Error).error
+                    FirstTimeError(
+                        message = error.message ?: "Something's wrong"
+                    ) {
+                        this.refresh()
+                    }
+                }
 
-            is LoadState.NotLoading -> CatListScreen(cats = cats)
+                CatListScreen(cats = this)
+            }
         }
     }
-
 }
-
-
-
-
-
-
-

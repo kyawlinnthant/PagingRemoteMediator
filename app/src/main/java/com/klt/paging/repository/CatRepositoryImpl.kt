@@ -17,20 +17,28 @@ class CatRepositoryImpl @Inject constructor(
     @OptIn(ExperimentalPagingApi::class)
     override fun getCats(): Pager<Int, CatEntity> {
 
-        // todo : just define config as UI,UX and performance
+        //  Maximum size must be at least pageSize + 2*prefetchDist, pageSize=10, prefetchDist=10, maxSize=20
         val dbSource = { database.catDao().pagingSource() }
         val config = PagingConfig(
-            initialLoadSize = Constant.INITIAL_LOAD_SIZE, // 20
-            pageSize = Constant.PAGE_SIZE, // 10
-            maxSize = Constant.MAX_LOAD_SIZE, // 100
+//            initialLoadSize = 50, // 20
+//            pageSize = 50, // 10
+//            maxSize = 52, // 100
+//            jumpThreshold = 1,
+//            enablePlaceholders = true,
+//            prefetchDistance = 1, // 2
+
+            pageSize = 50,
+//            prefetchDistance = 10,
+//            initialLoadSize = 50,
             jumpThreshold = 1,
             enablePlaceholders = true,
-            prefetchDistance = Constant.PREFETCH_DISTANCE, // 2
+            maxSize = PagingConfig.MAX_SIZE_UNBOUNDED
         )
         val remoteMediator = CatRemoteMediator(
             apiService = apiService,
             database = database
         )
+
         return Pager(
             config = config,
             initialKey = Constant.START_PAGE,

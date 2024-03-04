@@ -1,7 +1,6 @@
 package com.klt.paging.database
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -10,17 +9,17 @@ import androidx.room.Query
 interface RemoteKeyDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addRemoteKey(remoteKey: RemoteKeyEntity)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addRemoteKeys(remoteKeys: List<RemoteKeyEntity>)
+    suspend fun insertKeys(remoteKeys: List<RemoteKeyEntity>)
 
     @Query("SELECT * FROM ${RemoteKeyEntity.TABLE_NAME} WHERE id =:id")
-    suspend fun getRemoteKey(id: String): RemoteKeyEntity
+    suspend fun getRemoteKey(id: String): RemoteKeyEntity?
 
     @Query("DELETE FROM ${RemoteKeyEntity.TABLE_NAME}")
-    suspend fun deleteAll()
+    suspend fun deleteKeys()
 
-    @Delete(entity = RemoteKeyEntity::class)
-    suspend fun deleteRemoteKey(remoteKey: RemoteKeyEntity)
+    @Query(
+        "SELECT `created_at` FROM ${RemoteKeyEntity.TABLE_NAME} ORDER BY `created_at` DESC LIMIT 1"
+    )
+    suspend fun getCreationTime(): Long?
+
 }

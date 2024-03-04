@@ -1,6 +1,7 @@
 package com.klt.paging.view.item
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -18,14 +19,17 @@ import com.klt.paging.model.CatVo
 
 @Composable
 fun CatItem(
-    index: Int,
     cat: CatVo,
     modifier: Modifier = Modifier
 ) {
+    val ratio = cat.width.toFloat() / cat.height.toFloat()
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
+            .aspectRatio(
+                ratio = ratio,
+                matchHeightConstraintsFirst = true
+            ),
         contentAlignment = Alignment.BottomCenter
     ) {
 
@@ -39,7 +43,7 @@ fun CatItem(
             placeholder = painterResource(id = R.drawable.ic_launcher_background)
         )
         Text(
-            text = "${index + 1}  = ${cat.id}",
+            text = "$cat",
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier
                 .fillMaxWidth()

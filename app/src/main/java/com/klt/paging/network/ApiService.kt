@@ -14,6 +14,8 @@ interface ApiService {
     @GET("images/search")
     suspend fun getCats(
         @Query("limit") size: Int,
-        @Query("page") page: Int
+        @Query("page") page: Int,
+        @Query("size") resolution: String = "med", // full
+        @Query("order") order: String = "DESC", // full
     ): List<CatDTO>
 }
