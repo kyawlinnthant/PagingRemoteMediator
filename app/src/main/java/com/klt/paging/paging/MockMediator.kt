@@ -62,7 +62,7 @@ class MockMediator @Inject constructor(
         )
 
         return try {
-            delay(3000L)
+            delay(1000L)
             Log.e("shit.network","$currentPage , ${state.config.pageSize}")
             val response = service.getData(
                 page = currentPage,

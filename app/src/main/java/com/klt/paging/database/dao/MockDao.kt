@@ -12,7 +12,7 @@ interface MockDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMocks(mocks: List<MockDataEntity>)
 
-    @Query("SELECT * FROM ${MockDataEntity.TB_NAME}")
+    @Query("SELECT * FROM ${MockDataEntity.TB_NAME} ORDER BY `id` ASC")
     fun pagingSource(): PagingSource<Int, MockDataEntity>
 
     @Query("SELECT * FROM ${MockDataEntity.TB_NAME}")

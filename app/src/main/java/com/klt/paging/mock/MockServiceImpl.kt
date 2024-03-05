@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 class MockServiceImpl @Inject constructor() : MockService {
     companion object {
-        private val source = (1..100).map {
+        private val source = (1..1000).map {
             MockDto(
                 id = it,
                 name = "Name $it"

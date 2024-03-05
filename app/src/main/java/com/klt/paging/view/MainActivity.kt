@@ -12,6 +12,9 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.klt.paging.theme.PagingTheme
 import com.klt.paging.view.fullscreen.MocksScreen
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -20,6 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val vm: MainViewModel = hiltViewModel()
             val data = vm.data.collectAsLazyPagingItems()
+
             PagingTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),

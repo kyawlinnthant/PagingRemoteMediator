@@ -1,6 +1,5 @@
 package com.klt.paging.view.fullscreen
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -11,14 +10,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import com.klt.paging.model.MockVo
 import com.klt.paging.view.item.DataItem
 import com.klt.paging.view.item.EndItem
+import com.klt.paging.view.item.LoadingItem
 
 @Composable
 fun MocksScreen(
@@ -26,35 +33,174 @@ fun MocksScreen(
     modifier: Modifier = Modifier,
 ) {
 
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = 0
+    )
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                data.refresh()
+            }) {
+                Icon(imageVector = Icons.Default.Refresh, contentDescription = "refresh")
+            }
+        },
+        floatingActionButtonPosition = FabPosition.EndOverlay
     ) { paddingValues ->
 
         data.apply {
-            val ans = this.takeIf {
-                it.itemCount != 0
+            if (loadState.refresh is LoadState.Loading && loadState.mediator?.refresh is LoadState.Loading) {
+                FirstTimeLoading()
+            } else {
+                LazyColumn(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    state = listState,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(
+                        count = data.itemCount,
+                        key = (data.itemKey { it.id })
+                    ) { index ->
+                        val current = data[index]
+                        current?.let {
+                            if (it == data[0]) {
+                                Box(modifier = modifier.statusBarsPadding())
+                            }
+                            DataItem(mock = it)
+                        }
+                    }
+
+                    item {
+                        if (loadState.mediator?.append is LoadState.Loading) {
+                            LoadingItem()
+                        }
+                    }
+
+                    item {
+                        loadState.mediator?.let { state ->
+                            if (state.append.endOfPaginationReached) {
+                                EndItem()
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = modifier.navigationBarsPadding())
+                    }
+                }
             }
-            Log.e(
-                "shit.screen",
-                """                    ${this.itemCount}
-                    ${this.itemSnapshotList.items.size} 
-                    ${this.itemSnapshotList.size} 
-                    ${this.loadState} """
+        }
+
+
+        /* data.apply {
+             val ans = this.takeIf {
+                 it.itemCount != 0
+             }
+             Log.e(
+                 "shit.screen",
+                 """                    ${this.itemCount}
+                     ${this.itemSnapshotList.items.size}
+                     ${this.itemSnapshotList.size}
+                     ${this.loadState} """
+             )
+             *//*INITIAL
+            CombinedLoadStates(
+                refresh=Loading(endOfPaginationReached=false),
+                prepend=NotLoading(endOfPaginationReached=false),
+                append=NotLoading(endOfPaginationReached=false),
+                source=LoadStates(
+                    refresh=Loading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=NotLoading(endOfPaginationReached=false)),
+                mediator=null
             )
+            CombinedLoadStates(
+                refresh=NotLoading(endOfPaginationReached=false),
+                prepend=NotLoading(endOfPaginationReached=false),
+                append=NotLoading(endOfPaginationReached=false),
+                source=LoadStates(
+                    refresh=Loading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=NotLoading(endOfPaginationReached=false)),
+                mediator=LoadStates(
+                    refresh=NotLoading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=NotLoading(endOfPaginationReached=false))
+            )
+            REFRESH
+            CombinedLoadStates(
+                refresh=Loading(endOfPaginationReached=false),
+                prepend=NotLoading(endOfPaginationReached=false),
+                append=NotLoading(endOfPaginationReached=false),
+                source=LoadStates(
+                    refresh=Loading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=NotLoading(endOfPaginationReached=false)),
+                mediator=LoadStates(
+                    refresh=Loading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=NotLoading(endOfPaginationReached=false))
+            )
+            CombinedLoadStates(
+                refresh=Loading(endOfPaginationReached=false),
+                prepend=NotLoading(endOfPaginationReached=false),
+                append=NotLoading(endOfPaginationReached=false),
+                source=LoadStates(
+                    refresh=NotLoading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=true),
+                    append=NotLoading(endOfPaginationReached=true)),
+                mediator=LoadStates(
+                    refresh=Loading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=NotLoading(endOfPaginationReached=false))
+            )*//*
+            if (loadState.refresh is LoadState.Loading && loadState.mediator?.refresh is LoadState.Loading) {
+                FirstTimeLoading()
+            }
 
-//            if (loadState.refresh is LoadState.Loading && loadState.mediator?.refresh is LoadState.Loading) {
-//                FirstTimeLoading()
-//            }
-
+            *//*Network
+            PREPEND  0
+            APPEND   0
+            CombinedLoadStates(
+                refresh=NotLoading(endOfPaginationReached=false),
+                prepend=Loading(endOfPaginationReached=false),
+                append=Loading(endOfPaginationReached=false),
+                source=LoadStates(
+                    refresh=Loading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=NotLoading(endOfPaginationReached=false)),
+                mediator=LoadStates(
+                    refresh=NotLoading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=NotLoading(endOfPaginationReached=false))
+            )
+            PREPEND  0
+            APPEND   0
+            CombinedLoadStates(
+                refresh=NotLoading(endOfPaginationReached=false),
+                prepend=NotLoading(endOfPaginationReached=false),
+                append=Loading(endOfPaginationReached=false),
+                source=LoadStates(
+                    refresh=NotLoading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=true),
+                    append=NotLoading(endOfPaginationReached=true)),
+                mediator=LoadStates(
+                    refresh=NotLoading(endOfPaginationReached=false),
+                    prepend=NotLoading(endOfPaginationReached=false),
+                    append=Loading(endOfPaginationReached=false))
+            )*//*
             LazyColumn(
                 modifier = modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                state = rememberLazyListState(),
+                state = listState,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(
-                    count = data.itemCount
+                    count = data.itemCount,
+                    key = (data.itemKey { it.id })
                 ) { index ->
                     val current = data[index]
                     current?.let {
@@ -62,6 +208,12 @@ fun MocksScreen(
                             Box(modifier = modifier.statusBarsPadding())
                         }
                         DataItem(mock = it)
+                    }
+                }
+
+                item {
+                    if (loadState.mediator?.append is LoadState.Loading) {
+                        LoadingItem()
                     }
                 }
 
@@ -78,7 +230,7 @@ fun MocksScreen(
                 }
             }
 
-        }
+        }*/
     }
 }
 
