@@ -1,6 +1,5 @@
 package com.klt.paging.paging
 
-import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
@@ -24,23 +23,11 @@ class MockMediator @Inject constructor(
     private val source: MockDb
 ) : RemoteMediator<Int, MockDataEntity>() {
 
-    private val start = 1
     override suspend fun initialize(): InitializeAction {
-//        return InitializeAction.LAUNCH_INITIAL_REFRESH
-        return if (hadData())
-            InitializeAction.SKIP_INITIAL_REFRESH
-        else InitializeAction.LAUNCH_INITIAL_REFRESH
-
-//        return if (shouldSkipInitialRefresh())
-//            InitializeAction.SKIP_INITIAL_REFRESH
-//        else InitializeAction.LAUNCH_INITIAL_REFRESH
-
+        return InitializeAction.LAUNCH_INITIAL_REFRESH
     }
 
-    private suspend fun hadData() : Boolean{
-        return source.mockDao().getMocks().isNotEmpty()
-    }
-
+    // for refresh data policy
     private suspend fun shouldSkipInitialRefresh(
         cacheTimeout: Long = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
     ): Boolean {
@@ -53,17 +40,26 @@ class MockMediator @Inject constructor(
         state: PagingState<Int, MockDataEntity>
     ): MediatorResult {
 
-        Log.e("shit.mediator.state","$loadType")
-        val currentPage = getPage(
+        val pageState = getPage(
             loadType = loadType,
             state = state
-        ) ?: return MediatorResult.Success(
-            endOfPaginationReached = false
         )
+
+        val currentPage = when (pageState) {
+            is PageState.Append -> pageState.page ?: return MediatorResult.Success(
+                endOfPaginationReached = false
+            )
+
+            is PageState.Prepend -> pageState.page ?: return MediatorResult.Success(
+                endOfPaginationReached = true
+            )
+
+            is PageState.Refresh -> pageState.page
+        }
 
         return try {
             delay(1000L)
-            Log.e("shit.network","$currentPage , ${state.config.pageSize}")
+
             val response = service.getData(
                 page = currentPage,
                 size = state.config.pageSize
@@ -74,7 +70,7 @@ class MockMediator @Inject constructor(
                     source.mockDao().deleteAll()
                     source.keyDao().deleteAll()
                 }
-                val prevKey = if (currentPage > start) currentPage - 1 else null
+                val prevKey = if (currentPage > Constant.START_PAGE) currentPage - 1 else null
                 val nextKey = if (endOfPagination) null else currentPage + 1
                 val keys = response.map {
                     it.toKey(
@@ -103,27 +99,29 @@ class MockMediator @Inject constructor(
     private suspend fun getPage(
         loadType: LoadType,
         state: PagingState<Int, MockDataEntity>
-    ): Int? {
+    ): PageState {
 
         return when (loadType) {
 
             // loading
             LoadType.REFRESH -> {
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
-                remoteKeys?.nextPage?.minus(1) ?: start
+                val page = remoteKeys?.nextPage?.minus(1) ?: Constant.START_PAGE
+                PageState.Refresh(page = page)
             }
 
             // has data, load more
             LoadType.APPEND -> {
                 val remoteKeys = getLastRemoteKey(state)
-                remoteKeys?.nextPage
+                val page = remoteKeys?.nextPage
+                PageState.Append(page = page)
             }
 
             // has data, load previous
             LoadType.PREPEND -> {
-                null
-//                val remoteKeys = getFirstRemoteKey(state)
-//                remoteKeys?.prevPage
+                val remoteKeys = getFirstRemoteKey(state)
+                val page = remoteKeys?.prevPage
+                PageState.Prepend(page = page)
             }
         }
     }
