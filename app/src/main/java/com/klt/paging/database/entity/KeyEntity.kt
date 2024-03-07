@@ -1,14 +1,15 @@
-package com.klt.paging.database
+package com.klt.paging.database.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.klt.paging.database.RemoteKeyEntity.Companion.TABLE_NAME
 
-@Entity(tableName = TABLE_NAME)
-data class RemoteKeyEntity(
+@Entity(
+    tableName = KeyEntity.TABLE_NAME
+)
+data class KeyEntity(
     @PrimaryKey(autoGenerate = false)
-    val id: String,
+    val id: Int,
     val nextPage: Int?,
     val prevPage: Int?,
     val currentPage: Int,
@@ -16,6 +17,6 @@ data class RemoteKeyEntity(
     val createdAt: Long = System.currentTimeMillis()
 ) {
     companion object {
-        const val TABLE_NAME = "remote_key"
+        const val TABLE_NAME = "key_table"
     }
 }

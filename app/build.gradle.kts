@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.google.hilt)
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.jupiter)
 }
 
 android {
@@ -64,9 +65,14 @@ dependencies {
     implementation(libs.hilt.navigation)
     ksp(libs.google.hilt.compiler)
     implementation(libs.serialization.json)
+    testImplementation(libs.jupiter.api)
+    testImplementation(libs.jupiter.params)
+    testRuntimeOnly(libs.jupiter.engine)
+    testImplementation(libs.assertk)
+    testImplementation(libs.coroutines.test)
 
 
 
-//    debugImplementation("androidx.compose.ui:ui-tooling")
-//    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

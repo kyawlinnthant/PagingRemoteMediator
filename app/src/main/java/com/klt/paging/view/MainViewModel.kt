@@ -5,23 +5,25 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.klt.paging.model.toVo
-import com.klt.paging.repository.CatRepository
+import com.klt.paging.repository.MockRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val repo: CatRepository
+    repo: MockRepository
 ) : ViewModel() {
 
-    val cats = repo.getCats()
+    val data = repo.getData()
         .flow
         .map { pagingData ->
             pagingData.map {
                 it.toVo()
             }
         }
+//        .distinctUntilChanged()
         .cachedIn(viewModelScope)
 
 }

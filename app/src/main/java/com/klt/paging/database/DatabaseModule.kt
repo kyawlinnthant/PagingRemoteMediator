@@ -2,6 +2,7 @@ package com.klt.paging.database
 
 import android.content.Context
 import androidx.room.Room
+import com.klt.paging.database.db.MockDb
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,10 +16,10 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): CatDatabase = Room.databaseBuilder(
+    fun provideDatabase(@ApplicationContext context: Context): MockDb = Room.databaseBuilder(
         context,
-        CatDatabase::class.java,
-        CatDatabase.DB_NAME
+        MockDb::class.java,
+        MockDb.DB_NAME
     ).build()
 
 }
